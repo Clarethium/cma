@@ -16,12 +16,11 @@ The reference implementation and documentation will populate as polishing procee
 
 ## The Clarethium body
 
-cma sits alongside four reference artifacts published by Clarethium:
+cma sits alongside three reference artifacts published by Clarethium:
 
 - **Touchstone** validates work against quality standards.
 - **Whetstone** sharpens craft.
 - **Lodestone** orients practice.
-- **FieldReceipts** holds the proof corpus.
 
 cma is the executable companion to Lodestone. The doctrine is in Lodestone; the running code is here.
 
