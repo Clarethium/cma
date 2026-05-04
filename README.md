@@ -1,10 +1,10 @@
 # cma
 
-Executable compound practice loop. The terminal-side companion to Lodestone.
+Executable compound practice loop. The terminal-side companion to [Lodestone](https://github.com/Clarethium/lodestone).
 
 ## What this is
 
-cma is the operator's tool for running the compound practice loop on the local machine. It captures failures, surfaces warnings at the moment of action, tracks decisions, and detects recurrence patterns. cma is the executable instantiation of the practice defined in [Lodestone](https://github.com/Clarethium/lodestone).
+cma is the operator's tool for running the compound practice loop on the local machine. It captures failures, surfaces warnings at the moment of action, tracks decisions, and detects recurrence patterns. It is the executable instantiation of the practice defined in Lodestone.
 
 The methodology lives in Lodestone. cma is what running that methodology looks like in a terminal.
 
@@ -14,16 +14,16 @@ This repository is a fresh public implementation derived from the working versio
 
 The reference implementation and documentation will populate as polishing proceeds.
 
-## Companion
+## The Clarethium body
 
-cma is one of four reference artifacts in the Clarethium body:
+cma sits alongside four reference artifacts published by Clarethium:
 
 - **Touchstone** validates work against quality standards.
 - **Whetstone** sharpens craft.
-- **Lodestone** orients practice (the methodology).
-- **FieldReceipts** captures proofs.
+- **Lodestone** orients practice.
+- **FieldReceipts** holds the proof corpus.
 
-cma is the executable that lets an operator run the methodology defined in Lodestone. The doctrine is in Lodestone; the running code is here.
+cma is the executable companion to Lodestone. The doctrine is in Lodestone; the running code is here.
 
 ## License
 
