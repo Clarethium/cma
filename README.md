@@ -24,7 +24,7 @@ cma is the executable companion to Lodestone. The doctrine is in Lodestone; the 
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Apache 2.0. See [LICENSE](LICENSE).
 
 ## Author
 
