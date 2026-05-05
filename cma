@@ -392,22 +392,69 @@ PYEOF
 }
 
 cmd_stats() {
-    local view=""
+    local view="" recurrence_mode=false
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --rejections) view="rejection"; shift ;;
             --preventions) view="prevention"; shift ;;
+            --recurrence) recurrence_mode=true; shift ;;
             --leaks)
                 echo "cma stats --leaks: implementation pending." >&2
                 echo "Requires action-time injection data (see hooks/)." >&2
                 exit 1 ;;
-            --recurrence)
-                echo "cma stats --recurrence: implementation pending." >&2
-                echo "Requires capture-similarity analysis." >&2
-                exit 1 ;;
             *) echo "cma stats: unknown flag: $1" >&2; usage_for stats; exit 1 ;;
         esac
     done
+
+    if $recurrence_mode; then
+        python3 - "$CMA_DIR" <<'PYEOF'
+import json, os, sys
+from collections import Counter
+
+data_dir = sys.argv[1]
+groups = Counter()
+total = 0
+
+misses_path = os.path.join(data_dir, "misses.jsonl")
+if os.path.exists(misses_path):
+    with open(misses_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            key = (rec.get("surface", ""), rec.get("fm", ""))
+            groups[key] += 1
+            total += 1
+
+if total == 0:
+    print("No misses recorded yet.")
+    sys.exit(0)
+
+recurring = sorted(
+    [(k, v) for k, v in groups.items() if v >= 2],
+    key=lambda x: x[1], reverse=True
+)
+
+if not recurring:
+    print("{} miss(es) recorded; no patterns are recurring (threshold: 2+ per surface/fm pair).".format(total))
+    sys.exit(0)
+
+print("Recurring failure patterns from {} miss(es):".format(total))
+print()
+for (surface, fm), count in recurring:
+    s = surface if surface else "(no surface)"
+    f = fm if fm else "(no fm)"
+    print("  {}x  surface={}  fm={}".format(count, s, f))
+print()
+print("Recurrence indicates the prevention currently in place is not working.")
+print("Sharpen the warning, change when it surfaces, or retire it as ineffective.")
+PYEOF
+        return 0
+    fi
 
     if [[ -n "$view" ]]; then
         cmd_surface --type "$view"

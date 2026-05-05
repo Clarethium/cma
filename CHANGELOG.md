@@ -11,8 +11,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Initial cma 1.0 reference implementation (bash, no external dependencies; python3 used for JSON escape).
 - Capture verbs fully functional: `cma miss`, `cma decision`, `cma reject`, `cma prevented`.
 - `cma surface` with `--surface`, `--file`, `--type`, `--limit` filters and recency-ordered output.
-- `cma distill` default mode promotes a learning to permanent surfacing; `--retire` and `--review` modes stubbed.
-- `cma stats` default summary plus `--rejections` and `--preventions` views; `--leaks` and `--recurrence` views pending.
+- `cma distill` fully functional: default mode promotes a learning to permanent surfacing; `--review` shows recurring miss patterns as distillation candidates; `--retire <pattern>` marks matching core learnings as retired (preserved as retirement records).
+- `cma stats` default summary plus `--rejections`, `--preventions`, and `--recurrence` views functional; `--leaks` view pending pending action-time injection data.
 - Test suite (`test.sh`) with 42 cases covering all functional paths, edge cases (special characters, missing args, unknown flags), and JSON validity.
 - CI workflow (GitHub Actions) running the test suite on every push and pull request.
 - DESIGN.md specifying the seven-primitive surface and the migration from the working version.
@@ -20,10 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Pending for 1.0.0
 
-- `cma distill --retire`: mark core learnings matching a pattern as retired.
-- `cma distill --review`: preview candidate distillations from accumulated capture patterns.
-- `cma stats --leaks`: show failures that occurred despite active warnings (requires action-time injection data).
-- `cma stats --recurrence`: capture-similarity analysis to detect repeating failure patterns.
+- `cma stats --leaks`: show failures that occurred despite active warnings (genuinely blocked on action-time injection data; manual surfacing alone produces a misleading signal).
 
 ### Future (post-1.0)
 

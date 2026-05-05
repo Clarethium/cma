@@ -199,8 +199,16 @@ expect_matches  "stats counts rejections"        'rejections[[:space:]]+1' "$CMA
 expect_matches  "stats shows total"              'total[[:space:]]+4' "$CMA" stats
 expect_contains "stats --rejections shows reject" "r1" "$CMA" stats --rejections
 expect_exit     "stats --leaks exits 1 (pending)" 1 "$CMA" stats --leaks
-expect_exit     "stats --recurrence exits 1 (pending)" 1 "$CMA" stats --recurrence
 expect_exit     "stats --bogus exits 1"          1 "$CMA" stats --bogus
+
+# stats --recurrence
+reset
+expect_contains "recurrence empty data"          "No misses" "$CMA" stats --recurrence
+"$CMA" miss "x" --surface auth --fm assumption-over-verification >/dev/null
+expect_contains "recurrence single miss not recurring" "no patterns are recurring" "$CMA" stats --recurrence
+"$CMA" miss "y" --surface auth --fm assumption-over-verification >/dev/null
+expect_contains "recurrence detects pattern"     "2x" "$CMA" stats --recurrence
+expect_contains "recurrence frames as not working" "not working" "$CMA" stats --recurrence
 
 # ---------------------------------------------------------------------------
 # Summary
