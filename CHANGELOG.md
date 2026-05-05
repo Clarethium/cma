@@ -15,6 +15,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `cma stats` fully functional: default summary plus `--rejections`, `--preventions`, `--recurrence`, and `--leaks` views.
 - `cma surface` logs surface events to `surface_events.jsonl` (suppressible with `--no-log`) so `--leaks` can join misses against prior surfaced warnings.
 - All seven 1.0 primitives functional. v1.0.0 surface complete.
+- Action-time injection: PreToolUse hook for Claude Code (`hooks/claude-code-pre-tool-use.sh`) surfaces relevant prior captures automatically when Claude is about to edit a file or run a command. Heuristic surface detection from file path or command. Closes the compound loop without requiring manual `cma surface` calls.
+- Hook test coverage: silent for non-relevant tools, silent when no captures match, surfaces matched captures via stdin JSON, env var fallback for legacy hook protocol.
 - Test suite (`test.sh`) with 42 cases covering all functional paths, edge cases (special characters, missing args, unknown flags), and JSON validity.
 - CI workflow (GitHub Actions) running the test suite on every push and pull request.
 - DESIGN.md specifying the seven-primitive surface and the migration from the working version.
@@ -26,7 +28,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Future (post-1.0)
 
-- Action-time injection: hook integration so captures surface automatically at the moment of operator action, not only on manual `cma surface` invocation.
+- Generic CLI wrapper for action-time injection in environments other than Claude Code (terminal-based tools, other AI clients).
 - Texture preservation on misses: conversation excerpt, intended action, and corrected action captured alongside the description.
 - Counterfactual capture: explicit "what was about to happen versus what happened" data structure for studying basin transitions.
 - Per-project data scoping: optional separation of captures by project rather than a single global directory.

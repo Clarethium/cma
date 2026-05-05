@@ -34,6 +34,36 @@ Captures are written to `~/.cma/` as JSON Lines files (one record per line, appe
 
 Run `cma --help` for the full command surface.
 
+## Action-time injection (Claude Code)
+
+cma includes a PreToolUse hook for Claude Code in [`hooks/claude-code-pre-tool-use.sh`](hooks/claude-code-pre-tool-use.sh). When Claude is about to edit a file or run a command, the hook surfaces relevant prior captures automatically — the surfacing step of the compound loop without manual `cma surface` invocation.
+
+Install:
+
+1. Ensure `cma` is on your `PATH` (see Quick start above).
+2. Add a hook entry to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /path/to/cma/hooks/claude-code-pre-tool-use.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The hook detects the relevant surface heuristically from the file path or command (`auth`, `payments`, `db`, `api`, `ui`, `docs`, `test`), then queries `cma surface --surface <s>` for matching captures. Output goes to the assistant's context. Non-matching tool calls and tools that don't touch files are silent.
+
+Every fire is logged as a surface event, so `cma stats --leaks` can later flag failures that occurred despite a relevant warning being surfaced — the closing step of the compound loop turning into evidence.
+
 ## Testing
 
 ```bash
@@ -54,9 +84,9 @@ cma is the executable companion to Lodestone. The doctrine is in Lodestone; the 
 
 ## Roadmap
 
-The 1.0 surface is locked (see [DESIGN.md](DESIGN.md)) and all seven primitives are functional.
+The 1.0 surface is locked (see [DESIGN.md](DESIGN.md)) and all seven primitives are functional. Action-time injection is implemented for Claude Code (see [Action-time injection](#action-time-injection-claude-code) above).
 
-Beyond 1.0: action-time injection (hook integration so captures surface automatically at the moment of operator action), texture preservation on misses, counterfactual capture. See [CHANGELOG.md](CHANGELOG.md) for the full pending list.
+Beyond 1.0: generic CLI wrapper (for environments other than Claude Code), texture preservation on misses (conversation excerpt, intended action, corrected action), counterfactual capture, per-project data scoping. See [CHANGELOG.md](CHANGELOG.md) for the full pending list.
 
 ## License
 

@@ -222,6 +222,59 @@ expect_contains "leaks shows the miss"           "new despite warning" "$CMA" st
 expect_exit     "surface --no-log skips logging" 0 "$CMA" surface --no-log
 
 # ---------------------------------------------------------------------------
+# Hook integration (Claude Code PreToolUse)
+# ---------------------------------------------------------------------------
+
+reset
+HOOK="$(cd "$(dirname "$0")" && pwd)/hooks/claude-code-pre-tool-use.sh"
+# Make cma command available on PATH for the hook's subprocess call
+HOOK_BIN_DIR=$(mktemp -d)
+ln -sf "$CMA" "$HOOK_BIN_DIR/cma"
+trap 'rm -rf "$CMA_DIR" "$HOOK_BIN_DIR"' EXIT
+export PATH="$HOOK_BIN_DIR:$PATH"
+
+# Silent for non-relevant tool
+hook_out=$(echo '{"tool_name":"Read","tool_input":{"file_path":"/x/auth.ts"}}' | bash "$HOOK" 2>&1)
+if [[ -z "$hook_out" ]]; then
+    printf "PASS  %s\n" "hook silent for non-relevant tool"
+    pass=$((pass + 1))
+else
+    printf "FAIL  %s (out=%q)\n" "hook silent for non-relevant tool" "$hook_out"
+    fail=$((fail + 1))
+fi
+
+# Silent when no captures match
+hook_out=$(echo '{"tool_name":"Edit","tool_input":{"file_path":"/x/utils/z.ts"}}' | bash "$HOOK" 2>&1)
+if [[ -z "$hook_out" ]]; then
+    printf "PASS  %s\n" "hook silent when no captures match"
+    pass=$((pass + 1))
+else
+    printf "FAIL  %s (out=%q)\n" "hook silent when no captures match" "$hook_out"
+    fail=$((fail + 1))
+fi
+
+# Surfaces matched capture
+"$CMA" miss "auth issue example" --surface auth >/dev/null
+hook_out=$(echo '{"tool_name":"Edit","tool_input":{"file_path":"/x/auth/y.ts"}}' | bash "$HOOK" 2>&1)
+if [[ "$hook_out" == *"auth issue example"* ]]; then
+    printf "PASS  %s\n" "hook surfaces matched capture via stdin JSON"
+    pass=$((pass + 1))
+else
+    printf "FAIL  %s (out=%q)\n" "hook surfaces matched capture via stdin JSON" "$hook_out"
+    fail=$((fail + 1))
+fi
+
+# Env var fallback
+hook_out=$(CLAUDE_TOOL_NAME=Bash CLAUDE_TOOL_INPUT='{"command":"npm test auth"}' bash "$HOOK" </dev/null 2>&1)
+if [[ "$hook_out" == *"auth issue example"* ]]; then
+    printf "PASS  %s\n" "hook env var fallback works"
+    pass=$((pass + 1))
+else
+    printf "FAIL  %s (out=%q)\n" "hook env var fallback works" "$hook_out"
+    fail=$((fail + 1))
+fi
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 
