@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - All seven 1.0 primitives functional. v1.0.0 surface complete.
 - Action-time injection: PreToolUse hook for Claude Code (`hooks/claude-code-pre-tool-use.sh`) surfaces relevant prior captures automatically when Claude is about to edit a file or run a command. Heuristic surface detection from file path or command. Closes the compound loop without requiring manual `cma surface` calls.
 - Hook test coverage: silent for non-relevant tools, silent when no captures match, surfaces matched captures via stdin JSON, env var fallback for legacy hook protocol.
+- Texture preservation on misses: `--excerpt <text>` or `--excerpt-from <file>` (multi-line, preserves newlines and quotes through JSON encoding), `--intended <text>` (counterfactual: what was about to happen), `--corrected <text>` (what happened instead after correction). Texture fields preserve the conditions of failure so future surfacing can match by situation, not just keywords.
 - Test suite (`test.sh`) with 42 cases covering all functional paths, edge cases (special characters, missing args, unknown flags), and JSON validity.
 - CI workflow (GitHub Actions) running the test suite on every push and pull request.
 - DESIGN.md specifying the seven-primitive surface and the migration from the working version.
@@ -29,7 +30,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Future (post-1.0)
 
 - Generic CLI wrapper for action-time injection in environments other than Claude Code (terminal-based tools, other AI clients).
-- Texture preservation on misses: conversation excerpt, intended action, and corrected action captured alongside the description.
 - Counterfactual capture: explicit "what was about to happen versus what happened" data structure for studying basin transitions.
 - Per-project data scoping: optional separation of captures by project rather than a single global directory.
 - Trained classifier on accumulated labeled corpus (long-term, requires data accumulation).

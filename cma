@@ -32,9 +32,17 @@ usage_for() {
     case "$1" in
         miss)
             cat <<'EOF'
-cma miss <description> [--surface <s>] [--fm <fm>] [--files <f>[,<f>...]]
+cma miss <description>
+    [--surface <surface>]
+    [--fm <failure-shape>]
+    [--files <file>[,<file>...]]
+    [--excerpt <text>]       (or --excerpt-from <file>)
+    [--intended <text>]      (counterfactual: what was about to happen)
+    [--corrected <text>]     (what happened instead after correction)
 
 Capture a failure. The description is required; remaining flags are optional.
+Texture fields (excerpt, intended, corrected) preserve the conditions of the
+failure so future surfacing can match by situation, not just keywords.
 EOF
             ;;
         decision)
@@ -118,16 +126,26 @@ cmd_miss() {
     if [[ $# -eq 0 ]]; then usage_for miss; exit 1; fi
     local description="$1"; shift
     local surface="" fm="" files=""
+    local excerpt="" intended="" corrected=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --surface) surface="$2"; shift 2 ;;
             --fm) fm="$2"; shift 2 ;;
             --files) files="$2"; shift 2 ;;
+            --excerpt) excerpt="$2"; shift 2 ;;
+            --excerpt-from)
+                if [[ ! -f "$2" ]]; then
+                    echo "cma miss: --excerpt-from file not found: $2" >&2; exit 1
+                fi
+                excerpt=$(cat "$2"); shift 2 ;;
+            --intended) intended="$2"; shift 2 ;;
+            --corrected) corrected="$2"; shift 2 ;;
             *) echo "cma miss: unknown flag: $1" >&2; usage_for miss; exit 1 ;;
         esac
     done
     write_capture miss misses.jsonl "$description" \
-        surface "$surface" fm "$fm" files "$files"
+        surface "$surface" fm "$fm" files "$files" \
+        excerpt "$excerpt" intended "$intended" corrected "$corrected"
 }
 
 cmd_decision() {

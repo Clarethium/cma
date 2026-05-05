@@ -30,6 +30,18 @@ cma miss "fix removed the error message instead of addressing the defect" \
     --surface infra --fm speed-over-understanding
 ```
 
+For richer capture (texture preservation), add the situational fields:
+
+```bash
+cma miss "missed JWT expiration in middleware" \
+    --surface auth --fm assumption-over-verification \
+    --intended "patch only the failing test" \
+    --corrected "trace upstream defect, fix at root" \
+    --excerpt-from /tmp/conversation-excerpt.txt
+```
+
+The texture fields (`--excerpt`, `--intended`, `--corrected`) preserve the conditions of the failure so future surfacing can match by situation, not just keywords.
+
 Captures are written to `~/.cma/` as JSON Lines files (one record per line, append-only). The data directory can be overridden with `CMA_DIR=/path/to/data cma ...`.
 
 Run `cma --help` for the full command surface.

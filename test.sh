@@ -97,6 +97,41 @@ expect_exit "miss with description succeeds"     0 "$CMA" miss "test miss"
 expect_exit "miss with all flags succeeds"       0 "$CMA" miss "t" --surface docs --fm test --files a.md
 expect_exit "miss with unknown flag exits 1"     1 "$CMA" miss "t" --bogus value
 
+# Texture preservation: --excerpt, --intended, --corrected, --excerpt-from
+reset
+expect_exit "miss with --intended succeeds"      0 "$CMA" miss "t" --intended "what was about to happen"
+expect_exit "miss with --corrected succeeds"     0 "$CMA" miss "t" --corrected "what happened instead"
+expect_exit "miss with --excerpt succeeds"       0 "$CMA" miss "t" --excerpt "conversation excerpt here"
+
+# --excerpt-from reads from a file
+excerpt_file=$(mktemp)
+printf 'multiline\nexcerpt with "quotes"\n' > "$excerpt_file"
+expect_exit "miss with --excerpt-from succeeds" 0 "$CMA" miss "t" --excerpt-from "$excerpt_file"
+expect_exit "miss with --excerpt-from missing file exits 1" 1 "$CMA" miss "t" --excerpt-from "/nonexistent/path"
+rm -f "$excerpt_file"
+
+# Verify all texture fields land in JSONL
+reset
+"$CMA" miss "with full texture" \
+    --surface auth --fm fm-1 \
+    --intended "patch the symptom" \
+    --corrected "fix root cause" \
+    --excerpt "operator: do X. assistant: Y." >/dev/null
+texture_check=$(python3 -c "
+import json
+with open('$CMA_DIR/misses.jsonl') as f:
+    rec = json.loads(f.read().strip())
+ok = all(rec.get(k) for k in ['intended', 'corrected', 'excerpt'])
+print('ok' if ok else 'fail')
+")
+if [[ "$texture_check" == "ok" ]]; then
+    printf "PASS  %s\n" "all texture fields persist in JSONL"
+    pass=$((pass + 1))
+else
+    printf "FAIL  %s\n" "all texture fields persist in JSONL"
+    fail=$((fail + 1))
+fi
+
 reset
 expect_exit "decision succeeds"                  0 "$CMA" decision "TOPIC: choice (rationale)" --surface infra
 expect_exit "decision with applies-when"         0 "$CMA" decision "X" --applies-when "surface=docs"
