@@ -10,7 +10,7 @@ The methodology lives in Lodestone. cma is what running that methodology looks l
 
 ## Status
 
-cma 1.0 reference implementation in progress. Five of seven primitives functional: the four capture verbs (`cma miss`, `cma decision`, `cma reject`, `cma prevented`) and `cma surface` (filter and recency-sort prior captures). Two operational verbs remain partial: `cma distill` (stubbed) and `cma stats` (default summary works; flag-based views pending).
+cma 1.0 reference implementation. All seven primitives present in the surface. Five fully functional: `cma miss`, `cma decision`, `cma reject`, `cma prevented`, `cma surface`. Two partial: `cma distill` (default mode promotes learnings to permanent surfacing; `--retire` and `--review` stubbed), `cma stats` (default summary plus `--rejections` and `--preventions` views work; `--leaks` and `--recurrence` views require capture-similarity analysis and remain pending). Test suite covers all functional paths and pending flags.
 
 The full surface is specified in [DESIGN.md](DESIGN.md). Additive features (action-time injection, texture preservation, counterfactual capture, recurrence detection) layer on without changing the locked surface.
 

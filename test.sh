@@ -44,6 +44,22 @@ expect_contains() {
     fi
 }
 
+# Run a command and assert stdout matches a regex (robust to whitespace)
+expect_matches() {
+    local name="$1"
+    local pattern="$2"
+    shift 2
+    local output
+    output=$("$@" 2>&1) || true
+    if [[ "$output" =~ $pattern ]]; then
+        printf "PASS  %s\n" "$name"
+        pass=$((pass + 1))
+    else
+        printf "FAIL  %s (output didn't match /%s/)\n" "$name" "$pattern"
+        fail=$((fail + 1))
+    fi
+}
+
 # Assert all lines in a file parse as valid JSON
 expect_json_valid() {
     local name="$1"
@@ -139,23 +155,35 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Other operational verb stubs (run without error)
+# Distill (default mode + --review/--retire stubs)
 # ---------------------------------------------------------------------------
 
 reset
-expect_exit     "distill stub runs"              0 "$CMA" distill --review
-expect_exit     "stats stub runs"                0 "$CMA" stats
+expect_exit     "distill no args exits 1"        1 "$CMA" distill
+expect_exit     "distill --review runs"          0 "$CMA" distill --review
+expect_exit     "distill --retire X runs"        0 "$CMA" distill --retire pattern
+expect_exit     "distill default mode succeeds"  0 "$CMA" distill "Pattern Study before code" --scope project
+expect_json_valid "core.jsonl valid after distill" "$CMA_DIR/core.jsonl"
+expect_exit     "distill --bogus exits 1"        1 "$CMA" distill --bogus
 
 # ---------------------------------------------------------------------------
-# Stats stub reports counts correctly
+# Stats (default summary + --rejections/--preventions views + pending flags)
 # ---------------------------------------------------------------------------
 
 reset
+expect_exit     "stats default runs"             0 "$CMA" stats
 "$CMA" miss "one" >/dev/null
 "$CMA" miss "two" >/dev/null
 "$CMA" decision "d1" >/dev/null
-expect_contains "stats counts misses"            "misses       2" "$CMA" stats
-expect_contains "stats counts decisions"         "decisions    1" "$CMA" stats
+"$CMA" reject "r1" >/dev/null
+expect_matches  "stats counts misses"            'misses[[:space:]]+2' "$CMA" stats
+expect_matches  "stats counts decisions"         'decisions[[:space:]]+1' "$CMA" stats
+expect_matches  "stats counts rejections"        'rejections[[:space:]]+1' "$CMA" stats
+expect_matches  "stats shows total"              'total[[:space:]]+4' "$CMA" stats
+expect_contains "stats --rejections shows reject" "r1" "$CMA" stats --rejections
+expect_exit     "stats --leaks exits 1 (pending)" 1 "$CMA" stats --leaks
+expect_exit     "stats --recurrence exits 1 (pending)" 1 "$CMA" stats --recurrence
+expect_exit     "stats --bogus exits 1"          1 "$CMA" stats --bogus
 
 # ---------------------------------------------------------------------------
 # Summary

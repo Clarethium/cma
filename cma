@@ -246,26 +246,82 @@ PYEOF
 }
 
 cmd_distill() {
-    echo "cma distill: implementation pending."
-    echo "Will promote accumulated patterns to permanent surfacing,"
-    echo "retire ineffective learnings (--retire), or preview"
-    echo "candidate distillations (--review)."
-    usage_for distill
+    local retire_pattern="" review_mode=false
+    local learning="" scope="" surface=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --retire) retire_pattern="$2"; shift 2 ;;
+            --review) review_mode=true; shift ;;
+            --scope) scope="$2"; shift 2 ;;
+            --surface) surface="$2"; shift 2 ;;
+            -*) echo "cma distill: unknown flag: $1" >&2; usage_for distill; exit 1 ;;
+            *)
+                if [[ -z "$learning" ]]; then learning="$1"; else
+                    echo "cma distill: extra positional argument: $1" >&2; exit 1
+                fi
+                shift ;;
+        esac
+    done
+
+    if $review_mode; then
+        echo "cma distill --review: implementation pending."
+        echo "Will surface candidate distillations from accumulated capture patterns."
+        return 0
+    fi
+
+    if [[ -n "$retire_pattern" ]]; then
+        echo "cma distill --retire: implementation pending."
+        echo "Will mark core learnings matching '$retire_pattern' as retired."
+        return 0
+    fi
+
+    if [[ -z "$learning" ]]; then
+        usage_for distill
+        exit 1
+    fi
+
+    write_capture core core.jsonl "$learning" \
+        scope "$scope" surface "$surface"
 }
 
 cmd_stats() {
-    echo "cma stats: implementation pending."
-    echo ""
-    echo "Captures so far:"
-    for type in misses decisions rejections preventions; do
-        if [[ -f "$CMA_DIR/$type.jsonl" ]]; then
-            local count
-            count=$(wc -l < "$CMA_DIR/$type.jsonl")
-            printf "  %-12s %d\n" "$type" "$count"
-        else
-            printf "  %-12s 0\n" "$type"
-        fi
+    local view=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --rejections) view="rejection"; shift ;;
+            --preventions) view="prevention"; shift ;;
+            --leaks)
+                echo "cma stats --leaks: implementation pending." >&2
+                echo "Requires action-time injection data (see hooks/)." >&2
+                exit 1 ;;
+            --recurrence)
+                echo "cma stats --recurrence: implementation pending." >&2
+                echo "Requires capture-similarity analysis." >&2
+                exit 1 ;;
+            *) echo "cma stats: unknown flag: $1" >&2; usage_for stats; exit 1 ;;
+        esac
     done
+
+    if [[ -n "$view" ]]; then
+        cmd_surface --type "$view"
+        return 0
+    fi
+
+    # Default summary
+    echo "Compound practice summary"
+    echo ""
+    local total=0
+    for type in misses decisions rejections preventions core; do
+        local count=0
+        if [[ -f "$CMA_DIR/$type.jsonl" ]]; then
+            count=$(wc -l < "$CMA_DIR/$type.jsonl" | tr -d ' ')
+        fi
+        printf "  %-13s %s\n" "$type" "$count"
+        total=$((total + count))
+    done
+    echo ""
+    printf "  %-13s %s\n" "total" "$total"
 }
 
 # ---------------------------------------------------------------------------
