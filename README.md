@@ -52,6 +52,15 @@ cma sits alongside three reference artifacts published by Clarethium:
 
 cma is the executable companion to Lodestone. The doctrine is in Lodestone; the running code is here.
 
+## Roadmap
+
+The 1.0 surface is locked (see [DESIGN.md](DESIGN.md)). Pending work toward functional 1.0.0:
+
+- `cma distill --retire` and `--review` modes
+- `cma stats --leaks` and `--recurrence` views
+
+Beyond 1.0: action-time injection (hook integration so captures surface automatically at the moment of operator action), texture preservation on misses, counterfactual capture. See [CHANGELOG.md](CHANGELOG.md) for the full pending list.
+
 ## License
 
 Apache 2.0. See [LICENSE](LICENSE).
