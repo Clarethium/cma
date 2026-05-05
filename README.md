@@ -10,7 +10,29 @@ The methodology lives in Lodestone. cma is what running that methodology looks l
 
 ## Status
 
-The cma 1.0 surface is specified in [DESIGN.md](DESIGN.md): seven primitives mapped to the discipline defined in Lodestone. The reference implementation port from the working version is the next phase. Additive features (action-time injection, texture preservation, counterfactual capture, recurrence detection) layer on without changing the locked surface; the design document specifies what is in v1 and what is out of scope.
+cma 1.0 reference implementation in progress. The four capture verbs are functional in this repository (`cma miss`, `cma decision`, `cma reject`, `cma prevented`). The three operational verbs (`cma surface`, `cma distill`, `cma stats`) are stubbed with their flag interfaces in place and will be implemented in subsequent commits.
+
+The full surface is specified in [DESIGN.md](DESIGN.md). Additive features (action-time injection, texture preservation, counterfactual capture, recurrence detection) layer on without changing the locked surface.
+
+## Quick start
+
+Clone the repository and add the script to your `PATH`:
+
+```bash
+git clone https://github.com/Clarethium/cma.git
+ln -s "$(pwd)/cma/cma" ~/.local/bin/cma   # or copy to anywhere on PATH
+```
+
+Capture a failure:
+
+```bash
+cma miss "fix removed the error message instead of addressing the defect" \
+    --surface infra --fm speed-over-understanding
+```
+
+Captures are written to `~/.cma/` as JSON Lines files (one record per line, append-only). The data directory can be overridden with `CMA_DIR=/path/to/data cma ...`.
+
+Run `cma --help` for the full command surface.
 
 ## The Clarethium body
 

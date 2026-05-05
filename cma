@@ -1,0 +1,257 @@
+#!/usr/bin/env bash
+# cma - Compound practice loop
+# https://github.com/Clarethium/cma
+#
+# Specification: see DESIGN.md
+# Methodology: https://github.com/Clarethium/lodestone
+
+set -euo pipefail
+
+VERSION="1.0.0-dev"
+CMA_DIR="${CMA_DIR:-$HOME/.cma}"
+
+mkdir -p "$CMA_DIR"
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+new_id() {
+    printf "%s-%s" "$(date -u +%Y%m%d-%H%M%S)" "$(head -c 4 /dev/urandom | xxd -p)"
+}
+
+json_escape() {
+    python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"
+}
+
+iso_now() {
+    date -u +%Y-%m-%dT%H:%M:%SZ
+}
+
+usage_for() {
+    case "$1" in
+        miss)
+            cat <<'EOF'
+cma miss <description> [--surface <s>] [--fm <fm>] [--files <f>[,<f>...]]
+
+Capture a failure. The description is required; remaining flags are optional.
+EOF
+            ;;
+        decision)
+            cat <<'EOF'
+cma decision <description> [--surface <s>] [--applies-when <predicate>]
+
+Capture an architectural or strategic choice. Format the description as
+"TOPIC: choice (rationale)".
+EOF
+            ;;
+        reject)
+            cat <<'EOF'
+cma reject <description> [--surface <s>] [--revisit-when <trigger>]
+
+Capture an eliminated option. Format the description as "OPTION: reason".
+EOF
+            ;;
+        prevented)
+            cat <<'EOF'
+cma prevented <description> [--miss-id <id>] [--warning-id <id>]
+
+Capture a moment where a surfaced warning prevented a recurrence.
+EOF
+            ;;
+        surface)
+            cat <<'EOF'
+cma surface [--surface <s>] [--file <f>] [--type <t>] [--limit <n>]
+
+Bring relevant prior captures into view for the current context.
+EOF
+            ;;
+        distill)
+            cat <<'EOF'
+cma distill <learning> [--scope <s>] [--surface <s>]
+cma distill --retire <pattern>
+cma distill --review
+
+Promote a learning, retire a learning, or preview accumulated patterns.
+EOF
+            ;;
+        stats)
+            cat <<'EOF'
+cma stats [--rejections] [--leaks] [--preventions] [--recurrence]
+
+Evidence dashboard. Default mode shows summary; flags select views.
+EOF
+            ;;
+    esac
+}
+
+# ---------------------------------------------------------------------------
+# Capture: write a record to the appropriate jsonl file
+# ---------------------------------------------------------------------------
+
+write_capture() {
+    local type="$1"
+    local file="$2"
+    local description="$3"
+    shift 3
+    # Remaining args are key/value pairs
+
+    local id timestamp
+    id=$(new_id)
+    timestamp=$(iso_now)
+
+    {
+        printf '{"type":%s,"id":"%s","timestamp":"%s","description":%s' \
+            "$(json_escape "$type")" "$id" "$timestamp" "$(json_escape "$description")"
+        while [[ $# -gt 1 ]]; do
+            local key="$1" value="$2"
+            shift 2
+            [[ -n "$value" ]] && printf ',%s:%s' "$(json_escape "$key")" "$(json_escape "$value")"
+        done
+        printf '}\n'
+    } >> "$CMA_DIR/$file"
+
+    echo "Captured $type $id"
+}
+
+cmd_miss() {
+    if [[ $# -eq 0 ]]; then usage_for miss; exit 1; fi
+    local description="$1"; shift
+    local surface="" fm="" files=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --surface) surface="$2"; shift 2 ;;
+            --fm) fm="$2"; shift 2 ;;
+            --files) files="$2"; shift 2 ;;
+            *) echo "cma miss: unknown flag: $1" >&2; usage_for miss; exit 1 ;;
+        esac
+    done
+    write_capture miss misses.jsonl "$description" \
+        surface "$surface" fm "$fm" files "$files"
+}
+
+cmd_decision() {
+    if [[ $# -eq 0 ]]; then usage_for decision; exit 1; fi
+    local description="$1"; shift
+    local surface="" applies_when=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --surface) surface="$2"; shift 2 ;;
+            --applies-when) applies_when="$2"; shift 2 ;;
+            *) echo "cma decision: unknown flag: $1" >&2; usage_for decision; exit 1 ;;
+        esac
+    done
+    write_capture decision decisions.jsonl "$description" \
+        surface "$surface" applies_when "$applies_when"
+}
+
+cmd_reject() {
+    if [[ $# -eq 0 ]]; then usage_for reject; exit 1; fi
+    local description="$1"; shift
+    local surface="" revisit_when=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --surface) surface="$2"; shift 2 ;;
+            --revisit-when) revisit_when="$2"; shift 2 ;;
+            *) echo "cma reject: unknown flag: $1" >&2; usage_for reject; exit 1 ;;
+        esac
+    done
+    write_capture rejection rejections.jsonl "$description" \
+        surface "$surface" revisit_when "$revisit_when"
+}
+
+cmd_prevented() {
+    if [[ $# -eq 0 ]]; then usage_for prevented; exit 1; fi
+    local description="$1"; shift
+    local miss_id="" warning_id=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --miss-id) miss_id="$2"; shift 2 ;;
+            --warning-id) warning_id="$2"; shift 2 ;;
+            *) echo "cma prevented: unknown flag: $1" >&2; usage_for prevented; exit 1 ;;
+        esac
+    done
+    write_capture prevention preventions.jsonl "$description" \
+        miss_id "$miss_id" warning_id "$warning_id"
+}
+
+# ---------------------------------------------------------------------------
+# Operational verbs (stubbed for v1.0-dev)
+# ---------------------------------------------------------------------------
+
+cmd_surface() {
+    echo "cma surface: implementation pending."
+    echo "Will read $CMA_DIR/*.jsonl and surface captures matching the"
+    echo "current context (surface, files, keywords)."
+    usage_for surface
+}
+
+cmd_distill() {
+    echo "cma distill: implementation pending."
+    echo "Will promote accumulated patterns to permanent surfacing,"
+    echo "retire ineffective learnings (--retire), or preview"
+    echo "candidate distillations (--review)."
+    usage_for distill
+}
+
+cmd_stats() {
+    echo "cma stats: implementation pending."
+    echo ""
+    echo "Captures so far:"
+    for type in misses decisions rejections preventions; do
+        if [[ -f "$CMA_DIR/$type.jsonl" ]]; then
+            local count
+            count=$(wc -l < "$CMA_DIR/$type.jsonl")
+            printf "  %-12s %d\n" "$type" "$count"
+        else
+            printf "  %-12s 0\n" "$type"
+        fi
+    done
+}
+
+# ---------------------------------------------------------------------------
+# Help and dispatch
+# ---------------------------------------------------------------------------
+
+cmd_help() {
+    cat <<EOF
+cma $VERSION - compound practice loop
+
+Captures (write):
+  cma miss <description> [--surface <s>] [--fm <fm>] [--files <f>]
+  cma decision <description> [--surface <s>] [--applies-when <p>]
+  cma reject <description> [--surface <s>] [--revisit-when <t>]
+  cma prevented <description> [--miss-id <id>] [--warning-id <id>]
+
+Operations:
+  cma surface [--surface <s>] [--file <f>] [--type <t>] [--limit <n>]
+  cma distill <learning> [--scope <s>] [--surface <s>] | --retire <p> | --review
+  cma stats [--rejections] [--leaks] [--preventions] [--recurrence]
+
+Other:
+  cma --version
+  cma --help
+
+Specification: DESIGN.md in this repository.
+Methodology:   https://github.com/Clarethium/lodestone
+
+Data directory: \$CMA_DIR (default: ~/.cma)
+EOF
+}
+
+case "${1:-}" in
+    miss)        shift; cmd_miss "$@" ;;
+    decision)    shift; cmd_decision "$@" ;;
+    reject)      shift; cmd_reject "$@" ;;
+    prevented)   shift; cmd_prevented "$@" ;;
+    surface)     shift; cmd_surface "$@" ;;
+    distill)     shift; cmd_distill "$@" ;;
+    stats)       shift; cmd_stats "$@" ;;
+    --version|-v) echo "cma $VERSION" ;;
+    --help|-h|help|"") cmd_help ;;
+    *)
+        echo "cma: unknown command: $1" >&2
+        echo "Run 'cma --help' for usage." >&2
+        exit 1
+        ;;
+esac
