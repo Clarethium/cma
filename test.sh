@@ -160,11 +160,28 @@ fi
 
 reset
 expect_exit     "distill no args exits 1"        1 "$CMA" distill
-expect_exit     "distill --review runs"          0 "$CMA" distill --review
-expect_exit     "distill --retire X runs"        0 "$CMA" distill --retire pattern
+expect_exit     "distill --review with empty data" 0 "$CMA" distill --review
+expect_contains "review reports no misses"       "No misses" "$CMA" distill --review
 expect_exit     "distill default mode succeeds"  0 "$CMA" distill "Pattern Study before code" --scope project
 expect_json_valid "core.jsonl valid after distill" "$CMA_DIR/core.jsonl"
 expect_exit     "distill --bogus exits 1"        1 "$CMA" distill --bogus
+
+# Build a pattern of recurring misses and check --review surfaces it
+reset
+"$CMA" miss "first" --surface auth --fm assumption-over-verification >/dev/null
+"$CMA" miss "second" --surface auth --fm assumption-over-verification >/dev/null
+"$CMA" miss "third elsewhere" --surface ui --fm basin-capture >/dev/null
+expect_contains "review identifies recurring pattern" "2x" "$CMA" distill --review
+expect_contains "review reports surface in pattern"   "auth" "$CMA" distill --review
+
+# distill --retire
+reset
+"$CMA" distill "rule about auth" --surface auth >/dev/null
+"$CMA" distill "rule about ui" --surface ui >/dev/null
+expect_contains "retire with no match"           "No active core" "$CMA" distill --retire nonexistent
+expect_contains "retire matches by substring"    "Retired 1" "$CMA" distill --retire auth
+expect_contains "retire is idempotent"           "No active core" "$CMA" distill --retire auth
+expect_json_valid "core.jsonl valid after retire" "$CMA_DIR/core.jsonl"
 
 # ---------------------------------------------------------------------------
 # Stats (default summary + --rejections/--preventions views + pending flags)
