@@ -12,7 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Capture verbs fully functional: `cma miss`, `cma decision`, `cma reject`, `cma prevented`.
 - `cma surface` with `--surface`, `--file`, `--type`, `--limit` filters and recency-ordered output.
 - `cma distill` fully functional: default mode promotes a learning to permanent surfacing; `--review` shows recurring miss patterns as distillation candidates; `--retire <pattern>` marks matching core learnings as retired (preserved as retirement records).
-- `cma stats` default summary plus `--rejections`, `--preventions`, and `--recurrence` views functional; `--leaks` view pending pending action-time injection data.
+- `cma stats` fully functional: default summary plus `--rejections`, `--preventions`, `--recurrence`, and `--leaks` views.
+- `cma surface` logs surface events to `surface_events.jsonl` (suppressible with `--no-log`) so `--leaks` can join misses against prior surfaced warnings.
+- All seven 1.0 primitives functional. v1.0.0 surface complete.
 - Test suite (`test.sh`) with 42 cases covering all functional paths, edge cases (special characters, missing args, unknown flags), and JSON validity.
 - CI workflow (GitHub Actions) running the test suite on every push and pull request.
 - DESIGN.md specifying the seven-primitive surface and the migration from the working version.
@@ -20,7 +22,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Pending for 1.0.0
 
-- `cma stats --leaks`: show failures that occurred despite active warnings (genuinely blocked on action-time injection data; manual surfacing alone produces a misleading signal).
+(none — all seven primitives functional in this dev branch)
 
 ### Future (post-1.0)
 

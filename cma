@@ -180,26 +180,34 @@ cmd_prevented() {
 # ---------------------------------------------------------------------------
 
 cmd_surface() {
-    local surface="" file="" type="" limit="10"
+    local surface="" file="" type="" limit="10" log_event=true
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --surface) surface="$2"; shift 2 ;;
             --file) file="$2"; shift 2 ;;
             --type) type="$2"; shift 2 ;;
             --limit) limit="$2"; shift 2 ;;
+            --no-log) log_event=false; shift ;;
             *) echo "cma surface: unknown flag: $1" >&2; usage_for surface; exit 1 ;;
         esac
     done
 
-    python3 - "$CMA_DIR" "$surface" "$file" "$type" "$limit" <<'PYEOF'
-import json, os, sys
+    local log_arg="log"
+    $log_event || log_arg="nolog"
+
+    python3 - "$CMA_DIR" "$surface" "$file" "$type" "$limit" "$log_arg" <<'PYEOF'
+import json, os, sys, time
 from glob import glob
 
-data_dir, surface_filter, file_filter, type_filter, limit_str = sys.argv[1:]
+data_dir, surface_filter, file_filter, type_filter, limit_str, log_arg = sys.argv[1:]
 limit = int(limit_str) if limit_str else 10
+should_log = (log_arg == "log")
 
 captures = []
 for path in sorted(glob(os.path.join(data_dir, "*.jsonl"))):
+    # Don't include surface_events.jsonl in the captures-to-surface set
+    if os.path.basename(path) == "surface_events.jsonl":
+        continue
     with open(path) as f:
         for line in f:
             line = line.strip()
@@ -208,6 +216,9 @@ for path in sorted(glob(os.path.join(data_dir, "*.jsonl"))):
             try:
                 rec = json.loads(line)
             except json.JSONDecodeError:
+                continue
+            # Skip retirement records when surfacing
+            if rec.get("type") == "retirement":
                 continue
             captures.append(rec)
 
@@ -226,6 +237,32 @@ filtered = [r for r in captures if matches(r)]
 filtered.sort(key=lambda r: r.get("timestamp", ""), reverse=True)
 filtered = filtered[:limit]
 
+# Log the surface event so cma stats --leaks can later detect failures
+# that occurred despite a relevant warning being surfaced.
+if should_log:
+    event_id = "{}-{}".format(time.strftime("%Y%m%d-%H%M%S", time.gmtime()), os.urandom(4).hex())
+    event = {
+        "type": "surface_event",
+        "id": event_id,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "filter_surface": surface_filter,
+        "filter_file": file_filter,
+        "filter_type": type_filter,
+        "filter_limit": limit,
+        "matched": [
+            {
+                "id": r.get("id"),
+                "type": r.get("type"),
+                "surface": r.get("surface", ""),
+                "fm": r.get("fm", ""),
+            }
+            for r in filtered
+        ],
+    }
+    log_path = os.path.join(data_dir, "surface_events.jsonl")
+    with open(log_path, "a") as f:
+        f.write(json.dumps(event) + "\n")
+
 if not filtered:
     print("No captures match.")
     sys.exit(0)
@@ -235,7 +272,7 @@ for rec in filtered:
     rec_id = rec.get("id", "?")
     surface = rec.get("surface", "")
     desc = rec.get("description", "")
-    desc = " ".join(desc.split())  # collapse whitespace for one-line display
+    desc = " ".join(desc.split())
     if len(desc) > 96:
         desc = desc[:93] + "..."
     surface_part = " [" + surface + "]" if surface else ""
@@ -392,19 +429,86 @@ PYEOF
 }
 
 cmd_stats() {
-    local view="" recurrence_mode=false
+    local view="" recurrence_mode=false leaks_mode=false
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --rejections) view="rejection"; shift ;;
             --preventions) view="prevention"; shift ;;
             --recurrence) recurrence_mode=true; shift ;;
-            --leaks)
-                echo "cma stats --leaks: implementation pending." >&2
-                echo "Requires action-time injection data (see hooks/)." >&2
-                exit 1 ;;
+            --leaks) leaks_mode=true; shift ;;
             *) echo "cma stats: unknown flag: $1" >&2; usage_for stats; exit 1 ;;
         esac
     done
+
+    if $leaks_mode; then
+        python3 - "$CMA_DIR" <<'PYEOF'
+import json, os, sys
+
+data_dir = sys.argv[1]
+
+def load_jsonl(path):
+    records = []
+    if not os.path.exists(path):
+        return records
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    return records
+
+misses = load_jsonl(os.path.join(data_dir, "misses.jsonl"))
+events = load_jsonl(os.path.join(data_dir, "surface_events.jsonl"))
+
+if not events:
+    print("No surface events recorded yet.")
+    print("Leaks are detected by joining misses against prior surface events;")
+    print("run 'cma surface' (manually or via hook) before failures occur to populate this signal.")
+    sys.exit(0)
+
+leaks = []
+for miss in misses:
+    miss_ts = miss.get("timestamp", "")
+    miss_surface = miss.get("surface", "")
+    miss_fm = miss.get("fm", "")
+    if not miss_surface and not miss_fm:
+        continue  # nothing to match against
+    for event in events:
+        event_ts = event.get("timestamp", "")
+        if event_ts >= miss_ts:
+            continue  # event after miss
+        for matched in event.get("matched", []):
+            if matched.get("surface") == miss_surface and matched.get("fm") == miss_fm and miss_surface:
+                leaks.append((miss, event, matched))
+                break
+        else:
+            continue
+        break
+
+if not leaks:
+    print("{} miss(es), {} surface event(s); no leaks detected.".format(len(misses), len(events)))
+    print("(A leak is a miss whose surface/fm was already surfaced by a prior event.)")
+    sys.exit(0)
+
+print("{} leak(s): failures despite a relevant warning being surfaced earlier.".format(len(leaks)))
+print()
+for miss, event, matched in leaks:
+    desc = miss.get("description", "")
+    desc = " ".join(desc.split())
+    if len(desc) > 70:
+        desc = desc[:67] + "..."
+    print("  Miss:    {} {}".format(miss.get("id"), desc))
+    print("    surface={}  fm={}".format(miss.get("surface", ""), miss.get("fm", "")))
+    print("  Was surfaced by event {} at {}".format(event.get("id"), event.get("timestamp")))
+    print("    via capture {} (same surface/fm)".format(matched.get("id")))
+    print()
+PYEOF
+        return 0
+    fi
 
     if $recurrence_mode; then
         python3 - "$CMA_DIR" <<'PYEOF'

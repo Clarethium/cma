@@ -10,7 +10,7 @@ The methodology lives in Lodestone. cma is what running that methodology looks l
 
 ## Status
 
-cma 1.0 reference implementation. All seven primitives present in the surface and substantially functional. Six fully functional: `cma miss`, `cma decision`, `cma reject`, `cma prevented`, `cma surface`, `cma distill` (default + `--review` + `--retire`). Seventh partial: `cma stats` (default summary plus `--rejections`, `--preventions`, and `--recurrence` views functional; `--leaks` view pending pending action-time injection data). Test suite (51 cases) covers all functional paths, edge cases, and pending flags.
+cma 1.0 reference implementation. All seven primitives fully functional: `cma miss`, `cma decision`, `cma reject`, `cma prevented`, `cma surface`, `cma distill` (default + `--review` + `--retire`), and `cma stats` (default + `--rejections` + `--preventions` + `--recurrence` + `--leaks`). Test suite (55 cases) covers functional paths, edge cases, JSON validity, and the leak-detection join.
 
 The full surface is specified in [DESIGN.md](DESIGN.md). Additive features (action-time injection, texture preservation, counterfactual capture, recurrence detection) layer on without changing the locked surface.
 
@@ -54,9 +54,7 @@ cma is the executable companion to Lodestone. The doctrine is in Lodestone; the 
 
 ## Roadmap
 
-The 1.0 surface is locked (see [DESIGN.md](DESIGN.md)). One view remains pending toward functional 1.0.0:
-
-- `cma stats --leaks` (blocked on action-time injection data)
+The 1.0 surface is locked (see [DESIGN.md](DESIGN.md)) and all seven primitives are functional.
 
 Beyond 1.0: action-time injection (hook integration so captures surface automatically at the moment of operator action), texture preservation on misses, counterfactual capture. See [CHANGELOG.md](CHANGELOG.md) for the full pending list.
 

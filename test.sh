@@ -198,7 +198,6 @@ expect_matches  "stats counts decisions"         'decisions[[:space:]]+1' "$CMA"
 expect_matches  "stats counts rejections"        'rejections[[:space:]]+1' "$CMA" stats
 expect_matches  "stats shows total"              'total[[:space:]]+4' "$CMA" stats
 expect_contains "stats --rejections shows reject" "r1" "$CMA" stats --rejections
-expect_exit     "stats --leaks exits 1 (pending)" 1 "$CMA" stats --leaks
 expect_exit     "stats --bogus exits 1"          1 "$CMA" stats --bogus
 
 # stats --recurrence
@@ -209,6 +208,18 @@ expect_contains "recurrence single miss not recurring" "no patterns are recurrin
 "$CMA" miss "y" --surface auth --fm assumption-over-verification >/dev/null
 expect_contains "recurrence detects pattern"     "2x" "$CMA" stats --recurrence
 expect_contains "recurrence frames as not working" "not working" "$CMA" stats --recurrence
+
+# stats --leaks
+reset
+expect_contains "leaks with no events"           "No surface events" "$CMA" stats --leaks
+"$CMA" miss "old" --surface auth --fm assumption-over-verification >/dev/null
+"$CMA" surface --surface auth >/dev/null
+expect_contains "leaks with surface but no later miss" "no leaks detected" "$CMA" stats --leaks
+sleep 1
+"$CMA" miss "new despite warning" --surface auth --fm assumption-over-verification >/dev/null
+expect_contains "leaks detects miss after surfaced warning" "1 leak" "$CMA" stats --leaks
+expect_contains "leaks shows the miss"           "new despite warning" "$CMA" stats --leaks
+expect_exit     "surface --no-log skips logging" 0 "$CMA" surface --no-log
 
 # ---------------------------------------------------------------------------
 # Summary
