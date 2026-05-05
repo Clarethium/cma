@@ -114,11 +114,35 @@ expect_json_valid "rejections.jsonl is valid"    "$CMA_DIR/rejections.jsonl"
 expect_json_valid "preventions.jsonl is valid"   "$CMA_DIR/preventions.jsonl"
 
 # ---------------------------------------------------------------------------
-# Operational verb stubs (run without error)
+# Surface (operational verb)
 # ---------------------------------------------------------------------------
 
 reset
-expect_exit     "surface stub runs"              0 "$CMA" surface
+expect_contains "surface with empty data"        "No captures match." "$CMA" surface
+"$CMA" miss "first miss" --surface docs >/dev/null
+"$CMA" miss "second miss" --surface auth >/dev/null
+"$CMA" decision "a decision" --surface infra >/dev/null
+expect_contains "surface lists all captures"     "first miss" "$CMA" surface
+expect_contains "surface --type miss filters"    "first miss" "$CMA" surface --type miss
+expect_exit     "surface --limit 1 succeeds"     0 "$CMA" surface --limit 1
+expect_contains "surface --surface docs filters" "first miss" "$CMA" surface --surface docs
+expect_exit     "surface --bogus exits 1"        1 "$CMA" surface --bogus
+
+# Surface --type filter excludes other types
+output=$("$CMA" surface --type miss 2>&1)
+if [[ "$output" != *"a decision"* ]]; then
+    printf "PASS  %s\n" "surface --type miss excludes decisions"
+    pass=$((pass + 1))
+else
+    printf "FAIL  %s\n" "surface --type miss leaks decisions"
+    fail=$((fail + 1))
+fi
+
+# ---------------------------------------------------------------------------
+# Other operational verb stubs (run without error)
+# ---------------------------------------------------------------------------
+
+reset
 expect_exit     "distill stub runs"              0 "$CMA" distill --review
 expect_exit     "stats stub runs"                0 "$CMA" stats
 

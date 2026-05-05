@@ -180,10 +180,69 @@ cmd_prevented() {
 # ---------------------------------------------------------------------------
 
 cmd_surface() {
-    echo "cma surface: implementation pending."
-    echo "Will read $CMA_DIR/*.jsonl and surface captures matching the"
-    echo "current context (surface, files, keywords)."
-    usage_for surface
+    local surface="" file="" type="" limit="10"
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --surface) surface="$2"; shift 2 ;;
+            --file) file="$2"; shift 2 ;;
+            --type) type="$2"; shift 2 ;;
+            --limit) limit="$2"; shift 2 ;;
+            *) echo "cma surface: unknown flag: $1" >&2; usage_for surface; exit 1 ;;
+        esac
+    done
+
+    python3 - "$CMA_DIR" "$surface" "$file" "$type" "$limit" <<'PYEOF'
+import json, os, sys
+from glob import glob
+
+data_dir, surface_filter, file_filter, type_filter, limit_str = sys.argv[1:]
+limit = int(limit_str) if limit_str else 10
+
+captures = []
+for path in sorted(glob(os.path.join(data_dir, "*.jsonl"))):
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            captures.append(rec)
+
+def matches(rec):
+    if type_filter and rec.get("type") != type_filter:
+        return False
+    if surface_filter and rec.get("surface") != surface_filter:
+        return False
+    if file_filter:
+        files = rec.get("files", "")
+        if file_filter not in files:
+            return False
+    return True
+
+filtered = [r for r in captures if matches(r)]
+filtered.sort(key=lambda r: r.get("timestamp", ""), reverse=True)
+filtered = filtered[:limit]
+
+if not filtered:
+    print("No captures match.")
+    sys.exit(0)
+
+for rec in filtered:
+    type_label = rec.get("type", "?")
+    rec_id = rec.get("id", "?")
+    surface = rec.get("surface", "")
+    desc = rec.get("description", "")
+    desc = " ".join(desc.split())  # collapse whitespace for one-line display
+    if len(desc) > 96:
+        desc = desc[:93] + "..."
+    surface_part = " [" + surface + "]" if surface else ""
+    print(type_label.ljust(10) + " " + rec_id + surface_part)
+    print("           " + desc)
+    print()
+PYEOF
 }
 
 cmd_distill() {
