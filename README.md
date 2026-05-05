@@ -34,6 +34,14 @@ Captures are written to `~/.cma/` as JSON Lines files (one record per line, appe
 
 Run `cma --help` for the full command surface.
 
+## Testing
+
+```bash
+./test.sh
+```
+
+Tests cover all capture verbs (normal and edge cases including special characters, missing arguments, unknown flags) and the operational-verb stubs.
+
 ## The Clarethium body
 
 cma sits alongside three reference artifacts published by Clarethium:
