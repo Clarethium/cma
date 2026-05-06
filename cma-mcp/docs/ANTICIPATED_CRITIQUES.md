@@ -163,6 +163,43 @@ add a strict check at parse time and emit an `isError` for that
 specific schema. Until then, permissiveness with full provenance is
 the right balance.
 
+## C-11: "Same-repo with cma is a monorepo and monorepos rot. Why not a separate Clarethium/cma-mcp like frame-check-mcp?"
+
+**Position: deflected. Wrapper-of relationships belong with their
+wrapped subject; substrate-uses relationships do not.**
+
+cma-mcp wraps cma as a thin subprocess layer: every flag is a tool
+argument, every JSONL field a parser concern, the surface-events
+schema load-bearing for leak detection. That coupling makes drift
+the failure mode and the wrapper-vs-wrapped repo split a
+coordination tax the empire's compounding logic actively works
+against (DECISIONS AD-008).
+
+frame-check-mcp's separate-repo pattern doesn't apply because it
+*uses* Touchstone as a substrate. Touchstone can ship a new
+measurement layer without forcing a frame-check-mcp release; the
+relationship is loose enough that separation has value.
+Substrate-uses and wrapper-of are structurally different and
+accept different repo shapes.
+
+The monorepo cost is mitigated by: two release tracks via tag
+prefixing (`cma-1.x`, `cma-mcp-0.x`); per-component CHANGELOG;
+path-filtered CI (`tests-mcp.yml` only fires on `cma-mcp/**`
+changes, `test.yml` only on bash cma changes); clear component
+partition in the repo tree. The repo can be split via
+`git filter-repo` if a future evidence point demands it
+(AD-008 §Reversibility).
+
+**Concrete worked example of the drift the consolidation prevents.**
+cma's DATA.md schema names a JSONL field `revisit_when` on
+rejection records. If cma adds a new optional field tomorrow
+(say `revisit_after_date`) and the wrapper lives in a separate
+repo, three states become possible: cma-mcp parses the new field
+(but cma's release lags), cma writes the new field but cma-mcp
+ignores it, or both update but releases interleave. Same-repo
+collapses the three to one: a PR that adds the field touches both
+sides and a single review confirms the alignment.
+
 ## C-10: "`cma_surface` is a tool, not a resource. That's surprising for a read-only query."
 
 **Position: deliberate; the side effect is load-bearing.**
