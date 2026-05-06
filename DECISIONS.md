@@ -16,6 +16,51 @@ Newest first.
 
 ---
 
+## AD-008: cma-mcp lives inside Clarethium/cma as a subdirectory, not as a separate sibling repository
+
+**Date:** 2026-05-06
+
+**Decision.** cma-mcp ships under `cma-mcp/` in the Clarethium/cma
+repository alongside the canonical bash CLI rather than as a
+separate `Clarethium/cma-mcp` repository. One repository, one
+governance scaffold (root-level `STRATEGY.md`, `DECISIONS.md`,
+`GOVERNANCE.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CITATION.cff`,
+`NOTICE`), two release tracks (tags prefixed `cma-1.x` and
+`cma-mcp-0.x`), two CHANGELOGs (`CHANGELOG.md` for cma; `cma-mcp/CHANGELOG.md`
+for cma-mcp), two CI workflows (`tests.yml` for bash cma;
+`tests-mcp.yml` for the Python wrapper, path-filtered to
+`cma-mcp/**`).
+
+**Rationale.** cma-mcp is a *wrapper-of* relationship to cma, not a
+*uses-as-substrate* relationship: every cma flag is a tool argument,
+every JSONL field a parser concern, the cma `surface_events.jsonl`
+schema directly load-bearing for cma-mcp's leak-detection coverage.
+Wrapper-of relationships couple their subjects tightly enough that
+drift is the failure mode (STRATEGY DD-1). Same-repo prevents drift
+structurally: schema changes, new flags, and leak-detection logic
+must update wrapper and wrapped together in one PR. Separate repos
+would create a coordination tax that the empire's compounding
+logic actively works against.
+
+**Why frame-check-mcp's separate-repo pattern doesn't apply.** That
+project *uses* Touchstone as a substrate; Touchstone evolves
+independently. cma-mcp wraps cma. Treating frame-check-mcp's repo
+shape as the empire-wide rule was the early misread that produced
+the discarded `Clarethium/cma-mcp` repo on 2026-05-06; the
+correction landed in this commit's predecessor.
+
+**Trade-off accepted.** Repo size grows with both Python and bash
+content. Contributor population is slightly more mixed. Independent
+release cadence is preserved through tag prefixing and per-component
+CHANGELOG files; same-repo does not force same-release.
+
+**Reversibility.** If a future evidence point demands separation,
+the `cma-mcp/` directory can be extracted to its own repo via
+`git filter-repo`, preserving history. The decision is not
+load-bearing on irreversible structure.
+
+---
+
 ## AD-007: Tool surface is seven verbs, resource surface is four URIs
 
 **Date:** 2026-05-06
