@@ -74,7 +74,7 @@ warnings actually catching repeats — at a rate not statistically
 distinguishable from operators running the same loop through cma's
 shell hooks or CLI directly.
 
-This is the empire's core core claim, instantiated for
+This is the project's core core claim, instantiated for
 cma-mcp's distribution layer specifically. cma's loop is supposed
 to close. cma-mcp's value depends on the loop closing through MCP
 exposure too.
@@ -242,7 +242,7 @@ part of the post-correction reflex) rather than a code change.
 The cohort study (Layer 3) is the test that turns "appears to
 compound" into "compounds at rate X relative to control." Single-
 operator evidence is necessary for the project to ship at all but
-is not sufficient for the empire-grade core claim.
+is not sufficient for the cross-operator claim.
 
 **Honest summary.**
 

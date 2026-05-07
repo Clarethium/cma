@@ -39,7 +39,7 @@ Wrapper-of relationships couple their subjects tightly enough that
 drift is the failure mode (STRATEGY DD-1). Same-repo prevents drift
 structurally: schema changes, new flags, and leak-detection logic
 must update wrapper and wrapped together in one PR. Separate repos
-would create a coordination tax that the empire's compounding
+would create a coordination tax that the project's compounding
 logic actively works against.
 
 **Why frame-check-mcp's separate-repo pattern doesn't apply.** That

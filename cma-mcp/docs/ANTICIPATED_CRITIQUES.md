@@ -172,7 +172,7 @@ cma-mcp wraps cma as a thin subprocess layer: every flag is a tool
 argument, every JSONL field a parser concern, the surface-events
 schema load-bearing for leak detection. That coupling makes drift
 the failure mode and the wrapper-vs-wrapped repo split a
-coordination tax the empire's compounding logic actively works
+coordination tax the project's compounding logic actively works
 against (DECISIONS AD-008).
 
 frame-check-mcp's separate-repo pattern doesn't apply because it
