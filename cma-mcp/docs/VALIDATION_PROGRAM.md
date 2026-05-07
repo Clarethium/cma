@@ -163,11 +163,10 @@ substitute lived experience for a cohort study. Both are wrong.
   most weeks. Earlier captures exist in archived files; the active
   set was preserved through one distillation cycle.
 - Daily-driver binary: a working variant of cma that predates the
-  canonical 1.0 reference implementation. Schema differs in field
-  names (`ts` rather than `timestamp`, no `schema_version`). The
-  methodology is identical; the operator's evidence carries a
-  cma-binary-fidelity caveat that the cohort study is designed to
-  remove.
+  canonical 1.0 reference implementation. The methodology is
+  identical; minor schema-shape differences mean the operator's
+  evidence carries a cma-binary-fidelity caveat that the cohort
+  study is designed to remove.
 - AI client: Claude Code with bash cma's PreToolUse and
   SessionStart hooks throughout the window. Context-window upgrade
   to ~1M tokens (Claude Sonnet 4.5+) landed mid-window.
