@@ -276,8 +276,7 @@ next.
 
 ---
 
-*Pre-registration is the evidence discipline that makes
-empirical claims about compound learning worth taking. The plan
-above is fixed before data arrives; revisions to the plan happen
-only via explicit `STRATEGY.md` durable-decision overturns and are
-named publicly.*
+*Pre-registration is what makes empirical claims about compound
+learning worth taking: the plan above is fixed before data arrives.
+Revisions are tracked in `DECISIONS.md` and named publicly when
+they occur.*

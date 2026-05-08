@@ -44,9 +44,8 @@ logic actively works against.
 
 **Why frame-check-mcp's separate-repo pattern doesn't apply.** That
 project *uses* Touchstone as a substrate; Touchstone evolves
-independently. cma-mcp wraps cma. Treating frame-check-mcp's repo
-shape as the empire-wide rule was the early misread that produced
-the discarded `Clarethium/cma-mcp` repo on 2026-05-06; the
+independently. cma-mcp wraps cma. Treating frame-check-mcp's
+two-repo shape as a general convention was an early misread; the
 correction landed in this commit's predecessor.
 
 **Trade-off accepted.** Repo size grows with both Python and bash
