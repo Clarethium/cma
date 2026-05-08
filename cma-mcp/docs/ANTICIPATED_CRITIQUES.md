@@ -8,8 +8,8 @@ trade-off cma-mcp deliberately pays); some are deflected (a
 misreading of the design); some are open questions (cma-mcp does
 not yet have an answer beyond candor).
 
-The discipline of self-enumeration is shared with [frame-check-mcp's
-ANTICIPATED_CRITIQUES.md](https://github.com/Clarethium/frame-check-mcp/blob/master/docs/ANTICIPATED_CRITIQUES.md).
+The discipline of self-enumeration is shared with [frame-check's
+ANTICIPATED_CRITIQUES.md](https://github.com/Clarethium/frame-check/blob/master/docs/ANTICIPATED_CRITIQUES.md).
 Both projects publish their weak points up front because surfacing
 limits is the price of construct-honesty.
 
@@ -46,7 +46,7 @@ fails the tool dispatch. cma-mcp surfaces this clearly (the
 operator at the install URL). No silent failures.
 
 STRATEGY DD-1; further evidence that thin distribution wrappers are
-the empire-correct shape: frame-check-mcp's similar choice to keep
+the same shape: frame-check's similar choice to keep
 the analysis library separate from the MCP packaging.
 
 ## C-3: "Bash dependency means Windows-native operators are excluded."
@@ -77,7 +77,7 @@ provenance blocks are not decoration; they are the structure that
 carries the discipline forward to whatever the agent shows the
 user.
 
-frame-check-mcp ships the same pattern (its
+frame-check ships the same pattern (its
 `how_to_cite_faithfully` field exists for the same reason). Both
 projects accept the verbosity tax because the alternative is
 construct-honesty erosion at the agent boundary.
@@ -122,7 +122,7 @@ which forbids bundling FM definitions while requiring the pointer.
 GOVERNANCE.md is honest: cma-mcp is a single-curator project. The
 move to a named-reviewer model is a `STRATEGY.md` durable decision
 trigger when a sustained external contributor exists. Until then,
-the named curator is the credibility asset (matching frame-check-mcp's
+the named curator is the credibility asset (matching frame-check's
 explicit position).
 
 Disappearance is a real risk for any single-curator open-source
@@ -142,7 +142,7 @@ three-section payload discipline, JSONL parsing tolerance, and
 error envelopes. They do not exercise the JSON-RPC parser through
 real stdin/stdout pipes against a separate process.
 
-frame-check-mcp's `test_mcp_adversarial.py` runs subprocess
+frame-check's `test_mcp_adversarial.py` runs subprocess
 roundtrips at the wire level (rapid-fire sequential stdio,
 determinism normalization). cma-mcp v0.2 will add an equivalent.
 
@@ -163,7 +163,7 @@ add a strict check at parse time and emit an `isError` for that
 specific schema. Until then, permissiveness with full provenance is
 the right balance.
 
-## C-11: "Same-repo with cma is a monorepo and monorepos rot. Why not a separate Clarethium/cma-mcp like frame-check-mcp?"
+## C-11: "Same-repo with cma is a monorepo and monorepos rot. Why not a separate Clarethium/cma-mcp like frame-check (formerly frame-check-mcp)?"
 
 **Position: deflected. Wrapper-of relationships belong with their
 wrapped subject; substrate-uses relationships do not.**
@@ -175,9 +175,9 @@ the failure mode and the wrapper-vs-wrapped repo split a
 coordination tax the project's compounding logic actively works
 against (DECISIONS AD-008).
 
-frame-check-mcp's separate-repo pattern doesn't apply because it
+frame-check's separate-repo pattern doesn't apply because it
 *uses* Touchstone as a substrate. Touchstone can ship a new
-measurement layer without forcing a frame-check-mcp release; the
+measurement layer without forcing a frame-check release; the
 relationship is loose enough that separation has value.
 Substrate-uses and wrapper-of are structurally different and
 accept different repo shapes.

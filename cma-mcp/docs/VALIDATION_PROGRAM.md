@@ -6,7 +6,7 @@ post-launch protocol for accumulating evidence. The program is
 pre-registered so the test design is fixed before the data arrives.
 
 The structure follows frame-check-mcp's
-[VALIDATION_PROGRAM.md](https://github.com/Clarethium/frame-check-mcp/blob/master/docs/VALIDATION_PROGRAM.md)
+[VALIDATION_PROGRAM.md](https://github.com/Clarethium/frame-check/blob/master/docs/VALIDATION_PROGRAM.md)
 pattern: separate the protocol-conformance layer (does cma-mcp
 faithfully expose cma's loop) from the loop-closing layer (does the
 loop actually close when distributed via MCP).
