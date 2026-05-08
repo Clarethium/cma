@@ -45,7 +45,7 @@ fails the tool dispatch. cma-mcp surfaces this clearly (the
 `isError` payload names `reason: missing_binary` and points the
 operator at the install URL). No silent failures.
 
-STRATEGY DD-1; further evidence that thin distribution wrappers are
+ further evidence that thin distribution wrappers are
 the same shape: frame-check's similar choice to keep
 the analysis library separate from the MCP packaging.
 
@@ -111,7 +111,7 @@ does not validate, expand, or interpret the tag.
 The README and tool descriptions reference Lodestone because it is
 the canonical Clarethium methodology and the empirical case study
 operators are most likely to read. References are pointers, not
-enforcement. STRATEGY DD-4; pinned by the
+enforcement.  pinned by the
 `test_tool_descriptions_reference_lodestone_for_methodology` test
 which forbids bundling FM definitions while requiring the pointer.
 
@@ -163,7 +163,7 @@ add a strict check at parse time and emit an `isError` for that
 specific schema. Until then, permissiveness with full provenance is
 the right balance.
 
-## C-11: "Same-repo with cma is a monorepo and monorepos rot. Why not a separate Clarethium/cma-mcp like frame-check (formerly frame-check-mcp)?"
+## C-11: "Same-repo with cma is a monorepo and monorepos rot. Why not a separate Clarethium/cma-mcp like frame-check (formerly frame-check)?"
 
 **Position: deflected. Wrapper-of relationships belong with their
 wrapped subject; substrate-uses relationships do not.**

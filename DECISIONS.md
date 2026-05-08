@@ -36,15 +36,15 @@ for cma-mcp), two CI workflows (`tests.yml` for bash cma;
 every JSONL field a parser concern, the cma `surface_events.jsonl`
 schema directly load-bearing for cma-mcp's leak-detection coverage.
 Wrapper-of relationships couple their subjects tightly enough that
-drift is the failure mode (STRATEGY DD-1). Same-repo prevents drift
+drift is the failure mode. Same-repo prevents drift
 structurally: schema changes, new flags, and leak-detection logic
 must update wrapper and wrapped together in one PR. Separate repos
 would create a coordination tax that the project's compounding
 logic actively works against.
 
-**Why frame-check-mcp's separate-repo pattern doesn't apply.** That
+**Why frame-check's separate-repo pattern doesn't apply.** That
 project *uses* Touchstone as a substrate; Touchstone evolves
-independently. cma-mcp wraps cma. Treating frame-check-mcp's
+independently. cma-mcp wraps cma. Treating frame-check's
 two-repo shape as a general convention was an early misread; the
 correction landed in this commit's predecessor.
 
@@ -93,7 +93,7 @@ Resources are reserved for context the agent reads to orient itself
 for `cma_miss` and `cma_prevented` reference Lodestone's FM-1..10 as
 an example methodology but do not enumerate it.
 
-**Rationale.** STRATEGY DD-4. Methodology vocabulary lives in
+**Rationale.** Methodology vocabulary lives in
 Lodestone; bundling a frozen copy in cma-mcp couples release cadence
 and inverts canon-vs-companion separation. Operators who want the FM
 catalog read Lodestone directly; operators who want autoclassification
@@ -173,7 +173,7 @@ data carries assumptions cma-mcp cannot validate.
 using JSON-RPC 2.0 over stdio. No third-party MCP SDK in
 `pyproject.toml` dependencies.
 
-**Rationale.** STRATEGY DD-2. Echoes frame-check-mcp's
+**Rationale.** Echoes frame-check's
 self-containment convention. The protocol surface used here
 (initialize, tools/list, tools/call, resources/list, resources/read,
 ping, notifications) fits in a few hundred lines and removes a class
