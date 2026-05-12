@@ -1,10 +1,10 @@
 # Architectural Decisions
 
-This file records architectural decisions for the cma project at
-finer grain than `STRATEGY.md` durable decisions. Entries are dated
-and named. Decisions here can be revised through normal pull
-request review; durable decisions in `STRATEGY.md §6` require an
-explicit overturn proposal.
+This file records architectural decisions for the cma project.
+Entries are dated and named, newest-first. Each entry stands on its
+own: a decision, its rationale, the trade-off accepted, and whether
+the decision is reversible. A PR that contradicts a prior entry
+names the contradiction in the PR description.
 
 Entries to date are scoped to the **cma-mcp** component (the
 Python MCP wrapper under `cma-mcp/`). Architectural decisions
@@ -23,11 +23,11 @@ Newest first.
 **Decision.** cma-mcp ships under `cma-mcp/` in the Clarethium/cma
 repository alongside the canonical bash CLI rather than as a
 separate `Clarethium/cma-mcp` repository. One repository, one
-governance scaffold (root-level `STRATEGY.md`, `DECISIONS.md`,
-`GOVERNANCE.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CITATION.cff`,
-`NOTICE`), two release tracks (tags prefixed `cma-1.x` and
-`cma-mcp-0.x`), two CHANGELOGs (`CHANGELOG.md` for cma; `cma-mcp/CHANGELOG.md`
-for cma-mcp), two CI workflows (`tests.yml` for bash cma;
+governance scaffold (root-level `DECISIONS.md`, `GOVERNANCE.md`,
+`CONTRIBUTING.md`, `SECURITY.md`, `CITATION.cff`, `NOTICE`), two
+release tracks (tags prefixed `cma-1.x` and `cma-mcp-0.x`), two
+CHANGELOGs (`CHANGELOG.md` for cma; `cma-mcp/CHANGELOG.md` for
+cma-mcp), two CI workflows (`tests.yml` for bash cma;
 `tests-mcp.yml` for the Python wrapper, path-filtered to
 `cma-mcp/**`).
 
